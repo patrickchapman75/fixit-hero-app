@@ -1,0 +1,26 @@
+{
+  "name": "Fixit Hero",
+  "short_name": "Fixit Hero",
+  "description": "Identify. Repair. Maintain.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#ea580c",
+  "orientation": "portrait-primary",
+  "categories": ["utilities", "lifestyle"],
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,277 @@
+﻿import { supabase } from './supabaseClient';
+import type { User, Session } from '@supabase/supabase-js';
+
+export interface UserProfileNew {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  zipCode: string | null;
+  homeAge: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SignUpData {
+  email: string;
+  password: string;
+  name: string;
+  zipCode: string;
+  homeAge: number;
+}
+
+export async function signUpWithEmail(data: SignUpData): Promise<{ user: User | null; session: Session | null; error: Error | null }> {
+  try {
+    // First check if user already exists
+    const { data: existingUsers } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', data.email)
+      .single();
+
+    if (existingUsers) {
+      return {
+        user: null,
+        session: null,
+        error: new Error('An account with this email already exists. Try signing in instead.')
+      };
+    }
+
+    // Sign up the user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: data.name.split(' ')[0],
+          last_name: data.name.split(' ').slice(1).join(' ') || null,
+          zip_code: data.zipCode,
+          home_age: data.homeAge,
+        }
+      }
+    });
+
+    if (authError) {
+      return { user: null, session: null, error: authError as Error };
+    }
+
+    // Note: Profile creation is handled by getUserProfile when needed
+    // This prevents duplicate profile creation attempts
+
+    return { user: authData.user, session: authData.session, error: null };
+  } catch (error) {
+    return { user: null, session: null, error: error as Error };
+  }
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<{ session: Session | null; error: Error | null }> {
+  try {
+    // First check if user exists by trying to sign in
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      // Provide consistent error message to prevent email enumeration
+      return {
+        session: null,
+        error: new Error('Invalid email or password')
+      };
+    }
+
+    if (!data.session) {
+      return {
+        session: null,
+        error: new Error('Invalid email or password')
+      };
+    }
+
+    return { session: data.session, error: null };
+  } catch (error) {
+    return {
+      session: null,
+      error: new Error('Invalid email or password')
+    };
+  }
+}
+
+export async function signInWithGoogle(): Promise<{ error: Error | null }> {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      return { error: error as Error };
+    }
+
+    return { error: null };
+  } catch (error) {
+    return { error: error as Error };
+  }
+}
+
+export async function signOut(): Promise<{ error: Error | null }> {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      return { error: error as Error };
+    }
+    return { error: null };
+  } catch (error) {
+    return { error: error as Error };
+  }
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    return null;
+  }
+}
+
+export async function getUserProfile(userId: string): Promise<UserProfileNew | null> {
+  try {
+    console.log('getUserProfile: Fetching profile for userId:', userId);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.log('getUserProfile: Profile not found, error:', error);
+      // If profile doesn't exist, try to create it
+      if (error.code === 'PGRST116') {
+        console.log('getUserProfile: Creating new profile');
+        const user = await getCurrentUser();
+        if (user && user.email) {
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: user.email,
+              first_name: null,
+              last_name: null,
+              zip_code: null,
+              home_age: null,
+              latitude: null,
+              longitude: null
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            // If profile already exists (race condition), try to fetch it
+            if (insertError.code === '23505') { // unique constraint violation
+              console.log('Profile already exists, fetching existing profile');
+              const { data: existingProfile, error: fetchError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+              if (fetchError) {
+                console.error('Error fetching existing profile:', fetchError);
+                return null;
+              }
+
+              return {
+                id: existingProfile.id,
+                email: existingProfile.email,
+                firstName: existingProfile.first_name,
+                lastName: existingProfile.last_name,
+                zipCode: existingProfile.zip_code,
+                homeAge: existingProfile.home_age,
+                latitude: existingProfile.latitude,
+                longitude: existingProfile.longitude,
+                created_at: existingProfile.created_at,
+                updated_at: existingProfile.updated_at,
+              };
+            }
+            console.error('Error creating profile:', insertError);
+            return null;
+          }
+
+          console.log('getUserProfile: Profile created successfully:', newProfile);
+          return {
+            id: newProfile.id,
+            email: newProfile.email,
+            firstName: newProfile.first_name,
+            lastName: newProfile.last_name,
+            zipCode: newProfile.zip_code,
+            homeAge: newProfile.home_age,
+            latitude: newProfile.latitude,
+            longitude: newProfile.longitude,
+            created_at: newProfile.created_at,
+            updated_at: newProfile.updated_at,
+          };
+        }
+      }
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+
+    console.log('getUserProfile: Profile found:', data);
+    return {
+      id: data.id,
+      email: data.email,
+      firstName: data.first_name,
+      lastName: data.last_name,
+      zipCode: data.zip_code,
+      homeAge: data.home_age,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    return null;
+  }
+}
+
+export async function updateUserProfile(userId: string, updates: Partial<UserProfileNew>): Promise<{ error: Error | null }> {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: updates.firstName ?? undefined,
+        last_name: updates.lastName ?? undefined,
+        zip_code: updates.zipCode ?? undefined,
+        home_age: updates.homeAge ?? undefined,
+        latitude: updates.latitude ?? undefined,
+        longitude: updates.longitude ?? undefined,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    if (error) {
+      return { error: error as Error };
+    }
+
+    return { error: null };
+  } catch (error) {
+    return { error: error as Error };
+  }
+}
+
+export async function updateUserLocation(userId: string, latitude: number, longitude: number): Promise<{ error: Error | null }> {
+  return updateUserProfile(userId, { latitude, longitude });
+}
+
+// Listen to auth state changes
+export function onAuthStateChange(callback: (event: string, session: Session | null) => void) {
+  return supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+}
