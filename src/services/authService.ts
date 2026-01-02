@@ -102,6 +102,7 @@ export async function signInWithGoogle(): Promise<{ error: Error | null }> {
   try {
     // Use environment variable for redirect URL, fallback to current origin
     const redirectTo = import.meta.env.VITE_SUPABASE_REDIRECT_URL || window.location.origin;
+console.log('signInWithGoogle: Redirecting to:', redirectTo);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
