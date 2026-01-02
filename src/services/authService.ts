@@ -100,10 +100,13 @@ export async function signInWithEmail(email: string, password: string): Promise<
 
 export async function signInWithGoogle(): Promise<{ error: Error | null }> {
   try {
+    // Use environment variable for redirect URL, fallback to current origin
+    const redirectTo = import.meta.env.VITE_SUPABASE_REDIRECT_URL || window.location.origin;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: redirectTo,
       },
     });
 

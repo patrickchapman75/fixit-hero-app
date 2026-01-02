@@ -1,0 +1,24 @@
+# Dependencies & Build
+node_modules/
+dist/
+.cursor/
+*.timestamp*
+
+# Environment & Secrets  
+.env
+.env.*
+.env.local
+!.env.example
+
+# IDE & System
+.vscode/
+.idea/
+*.log
+.DS_Store
+
+# Assets (keep SVG for PWA icons)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico

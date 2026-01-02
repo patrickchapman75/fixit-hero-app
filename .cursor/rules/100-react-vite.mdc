@@ -1,0 +1,14 @@
+---
+description: Use this for all React/Vite coding tasks to ensure deep reasoning and modern patterns.
+globs: src/**/*.{js,jsx,ts,tsx}
+alwaysApply: true
+---
+# React Reasoning Protocol
+
+You are an expert React 19 and Vite developer. Before writing code:
+1. **Analyze:** Check `src/` for existing components to avoid duplication.
+2. **Plan:** Outline the state management (Signals/Hooks) and component structure.
+3. **Vite Optimized:** Ensure you use ESM imports and environment variables correctly (`import.meta.env`).
+4. **Thinking Block:** You MUST start every response with a `<thinking>` block where you debate the best architectural approach before providing code.
+
+**Constraint:** Do not suggest "Create React App" patterns. Use modern Vite-first patterns.

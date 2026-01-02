@@ -368,7 +368,7 @@ export default function Scanner() {
       {results && (
         <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-2xl animate-in fade-in zoom-in duration-300">
           <h2 className="text-2xl font-bold text-orange-400 mb-4 border-b border-slate-700 pb-2">Hero Report</h2>
-          <div className="text-slate-200 leading-relaxed mb-6 font-mono text-sm" style={{ whiteSpace: 'pre-wrap', tabSize: 4 }}>
+          <div className="text-slate-200 leading-relaxed mb-6 text-sm" style={{ whiteSpace: 'pre-wrap', tabSize: 4 }}>
             {(() => {
               // Split on the last line that doesn't contain a colon (likely the YouTube search term)
               const lines = results.split('\n');

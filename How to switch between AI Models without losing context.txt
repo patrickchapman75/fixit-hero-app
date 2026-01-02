@@ -1,0 +1,10 @@
+**How to use this for Model Switching
+When you run out of Claude 3.5 Sonnet tokens and want to switch to Grok-3 or Gemini 2.0 Pro:
+
+Ask for Handover: In your current chat, say: "I'm switching models now. Give me the handover block."
+
+AI Action: Because of the 999 rule, the AI will look at your code, update the PROJECT_SUMMARY.md, and give you a summary text.
+
+Switch & Paste: Change the model in Cursor, and start the new chat with:
+
+"I am continuing work on this project. @Codebase Read PROJECT_SUMMARY.md and my previous handover summary: [Paste Summary]. Let's continue with Step 1."

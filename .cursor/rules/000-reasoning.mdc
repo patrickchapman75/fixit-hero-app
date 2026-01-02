@@ -1,0 +1,15 @@
+---
+description: Logic and Reasoning Protocol for ALL files.
+globs: **/*
+alwaysApply: true
+---
+# Reasoning Protocol
+
+You MUST follow this process for every request:
+1. **Context Check**: Use `@Codebase` to find relevant files. Do not guess filenames.
+2. **Thinking Phase**: Start your response with a `<thinking>` block. 
+   - Analyze the current state and architectural impact.
+   - List potential side effects (especially React re-renders or Vite HMR issues).
+   - Plan the exact changes step-by-step.
+3. **Execution**: Provide code using "Diffs" to save tokens. Avoid rewriting entire files unless necessary.
+4. **Verification**: Use `grep` or search to see where your changes impact the rest of the app. Use the terminal to run `npm run lint` or tests if available.
