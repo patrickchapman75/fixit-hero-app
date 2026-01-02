@@ -11,6 +11,9 @@ import AuthCallback from './components/AuthCallback';
 import { Toaster } from 'sonner'; // Integrated Sonner
 
 function App() {
+
+  console.log('App.tsx loaded!');
+  
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('home');
   const [showAuthCallback, setShowAuthCallback] = useState(false);

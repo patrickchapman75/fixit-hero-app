@@ -13,6 +13,14 @@ const siteUrl = isDevelopment
   ? 'http://localhost:5173'
   : (import.meta.env.VITE_SITE_URL || 'https://fixit-hero.com');
 
+// --- ADD THESE CONSOLE.LOGS ---
+console.log('--- Supabase Client Init Debug ---');
+console.log('Is Development Mode:', isDevelopment);
+console.log('Resolved Site URL:', siteUrl);
+console.log('VITE_SITE_URL env var:', import.meta.env.VITE_SITE_URL);
+console.log('--- End Debug ---');
+// --- END CONSOLE.LOGS ---
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
