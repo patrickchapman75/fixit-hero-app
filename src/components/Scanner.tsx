@@ -283,39 +283,45 @@ export default function Scanner() {
       )}
 
       {showCamera && (
-        <div className="relative rounded-2xl overflow-hidden border-4 border-orange-500 shadow-2xl bg-slate-900">
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            videoConstraints={{
-              facingMode: facingMode // Use back camera by default, can be toggled
-            }}
-            className="w-full"
-          />
-          <div className="absolute bottom-4 left-0 right-0 flex gap-4 justify-center px-4">
-            <button
-              onClick={() => setShowCamera(false)}
-              className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-full font-bold shadow-lg"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={switchCamera}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
-              title={`Switch to ${facingMode === "user" ? "back" : "front"} camera`}
-            >
-              <span>📷</span>
-              Switch
-            </button>
+        <>
+          <div className="rounded-2xl overflow-hidden border-4 border-orange-500 shadow-2xl bg-slate-900">
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              videoConstraints={{
+                facingMode: facingMode // Use back camera by default, can be toggled
+              }}
+              className="w-full"
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-1 justify-center mt-4 px-4">
             <button
               onClick={capture}
-              className="bg-white text-black px-8 py-3 rounded-full font-bold shadow-lg hover:bg-orange-50 transition-colors"
+              className="flex items-center justify-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
             >
-              SNAP PHOTO
+              <span>📷</span>
+              <span>Snap Issue</span>
             </button>
+            <div className="flex gap-1 justify-center sm:justify-start">
+              <button
+                onClick={switchCamera}
+                className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+                title={`Switch to ${facingMode === "user" ? "back" : "front"} camera`}
+              >
+                <span>🔄</span>
+                <span>Switch Camera</span>
+              </button>
+              <button
+                onClick={() => setShowCamera(false)}
+                className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-slate-600 hover:bg-slate-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+              >
+                <span>❌</span>
+                <span>Cancel</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {showTextInput && capturedImage && (
