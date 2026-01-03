@@ -345,9 +345,9 @@ export default function Scanner() {
         <div className="flex gap-2 justify-center mt-4 px-4">
           <button
             onClick={capture}
-            className="flex items-center justify-center gap-1 px-[10.3px] py-[5.5px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+            className="flex items-center justify-center gap-1 px-[11.3px] py-[6px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
           >
-            <span>📷</span>
+            <span className="text-lg">📷</span>
             <span>Snap Issue</span>
           </button>
           <button
