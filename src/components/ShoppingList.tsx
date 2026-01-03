@@ -12,6 +12,15 @@ import {
 } from '../services/shoppingListService';
 import StoreButtons from './StoreButtons';
 
+// Function to categorize items as parts or tools (same logic as Scanner.tsx)
+const categorizeItem = (itemName: string): 'part' | 'tool' => {
+  const lowerItem = itemName.toLowerCase();
+  const isTool = /\b(screwdriver|hammer|pliers|wrench|drill|saw|tape|pliers|pliers|level|sander|sandpaper|tape measure|multimeter|voltage tester|wire stripper|pipe wrench|adjustable wrench|allen wrench|hex key)\b/i.test(lowerItem) ||
+                /\b(screwdrivers|hammers|pliers|wrenches|drills|saws|tapes|pliers|pliers|levels|sanders|sandpapers|tape measures|multimeters|voltage testers|wire strippers|pipe wrenches|adjustable wrenches|allen wrenches|hex keys)\b/i.test(lowerItem);
+
+  return isTool ? 'tool' : 'part';
+};
+
 export default function ShoppingList() {
   const { user } = useAuth();
   const [issueLists, setIssueLists] = useState<IssueShoppingList[]>([]);
@@ -267,6 +276,11 @@ export default function ShoppingList() {
                     <h3 className="text-xl font-bold text-orange-400">{issueList.issueTitle}</h3>
                     <p className="text-slate-400 text-sm">
                       {activeItems.length} {activeItems.length === 1 ? 'item' : 'items'} to buy
+                      {activeItems.length > 0 && (
+                        <span className="text-slate-500">
+                          {' '}({activeItems.filter(item => categorizeItem(item.name) === 'part').length} parts, {activeItems.filter(item => categorizeItem(item.name) === 'tool').length} tools)
+                        </span>
+                      )}
                       {completedItems.length > 0 && ` • ${completedItems.length} purchased`}
                     </p>
                   </div>
