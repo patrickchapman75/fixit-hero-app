@@ -17,6 +17,12 @@ export default function Scanner() {
   const [allParts, setAllParts] = useState<string[]>([]);
   const [categorizedParts, setCategorizedParts] = useState<{parts: string[], tools: string[]}>({parts: [], tools: []});
   const [partsQuantities, setPartsQuantities] = useState<Record<string, number>>({});
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+
+  // Function to switch between front and back camera
+  const switchCamera = useCallback(() => {
+    setFacingMode(current => current === "user" ? "environment" : "user");
+  }, []);
 
   // Function to clean asterisks from AI responses while preserving them in emails and social media
   const cleanAsterisks = (text: string): string => {
@@ -282,6 +288,9 @@ export default function Scanner() {
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/jpeg"
+            videoConstraints={{
+              facingMode: facingMode // Use back camera by default, can be toggled
+            }}
             className="w-full"
           />
           <div className="absolute bottom-4 left-0 right-0 flex gap-4 justify-center px-4">
@@ -290,6 +299,14 @@ export default function Scanner() {
               className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-full font-bold shadow-lg"
             >
               Cancel
+            </button>
+            <button
+              onClick={switchCamera}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+              title={`Switch to ${facingMode === "user" ? "back" : "front"} camera`}
+            >
+              <span>📷</span>
+              Switch
             </button>
             <button
               onClick={capture}
