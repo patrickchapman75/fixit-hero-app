@@ -298,27 +298,39 @@ export default function ShoppingList() {
                                   <Circle size={24} />
                                 </button>
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                    <span className="text-white font-medium truncate">{item.name}</span>
-                                    <div className="flex items-center justify-between sm:justify-end gap-2">
-                                      <div className="flex items-center gap-1">
-                                        <span className="text-xs text-slate-400 hidden sm:inline">Qty:</span>
-                                        <button
-                                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                          className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
-                                          disabled={item.quantity <= 1}
-                                        >
-                                          <Minus size={12} />
-                                        </button>
-                                        <span className="text-sm text-slate-300 min-w-[20px] text-center">{item.quantity}</span>
-                                        <button
-                                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                          className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
-                                        >
-                                          <Plus size={12} />
-                                        </button>
+                                  <div className="flex flex-col gap-1">
+                                    {/* Item name - full on mobile, truncate on larger screens */}
+                                    <span className="text-white font-medium sm:truncate">{item.name}</span>
+
+                                    {/* Mobile: Show compact info, Desktop: Show expanded layout */}
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                          <span className="text-xs text-slate-400">Qty:</span>
+                                          <button
+                                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                            className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                            disabled={item.quantity <= 1}
+                                          >
+                                            <Minus size={12} />
+                                          </button>
+                                          <span className="text-sm text-slate-300 min-w-[20px] text-center">{item.quantity}</span>
+                                          <button
+                                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                            className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                          >
+                                            <Plus size={12} />
+                                          </button>
+                                        </div>
+
+                                        {/* Mobile timestamp - show date only, Desktop: full datetime */}
+                                        <span className="text-xs text-slate-500 sm:hidden">
+                                          {new Date(item.addedAt).toLocaleDateString()}
+                                        </span>
                                       </div>
-                                      <span className="text-xs text-slate-500 whitespace-nowrap hidden sm:inline">
+
+                                      {/* Desktop timestamp */}
+                                      <span className="text-xs text-slate-500 hidden sm:inline whitespace-nowrap">
                                         {new Date(item.addedAt).toLocaleString()}
                                       </span>
                                     </div>
@@ -357,11 +369,19 @@ export default function ShoppingList() {
                                   <CheckCircle2 size={24} className="fill-orange-500" />
                                 </button>
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                                    <span className="text-slate-400 line-through truncate">{item.name}</span>
-                                    <div className="flex items-center justify-end gap-2">
+                                  <div className="flex flex-col gap-1">
+                                    {/* Item name - full on mobile, truncate on larger screens */}
+                                    <span className="text-slate-400 line-through sm:truncate">{item.name}</span>
+
+                                    {/* Mobile: Show compact info, Desktop: Show expanded layout */}
+                                    <div className="flex items-center justify-between">
                                       <span className="text-sm text-slate-500">×{item.quantity}</span>
-                                      <span className="text-xs text-slate-500 whitespace-nowrap hidden sm:inline">
+                                      {/* Mobile timestamp - show date only, Desktop: full datetime */}
+                                      <span className="text-xs text-slate-500 sm:hidden">
+                                        {new Date(item.addedAt).toLocaleDateString()}
+                                      </span>
+                                      {/* Desktop timestamp */}
+                                      <span className="text-xs text-slate-500 hidden sm:inline whitespace-nowrap">
                                         {new Date(item.addedAt).toLocaleString()}
                                       </span>
                                     </div>
