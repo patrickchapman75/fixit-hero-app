@@ -16,7 +16,7 @@ export default function StoreButtons({ partName, className = '' }: StoreButtonsP
           href={links.amazon}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 px-3 py-1.5 rounded text-sm bg-[#FF9900] hover:bg-[#FF8800] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+          className="flex items-center gap-1 px-2.5 py-1.25 rounded text-sm bg-[#FF9900] hover:bg-[#FF8800] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
           title="Find on Amazon"
         >
           <span>📦</span>
@@ -27,7 +27,7 @@ export default function StoreButtons({ partName, className = '' }: StoreButtonsP
           href={links.homeDepot}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 px-3 py-1.5 rounded text-sm bg-[#F96302] hover:bg-[#E85500] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+          className="flex items-center gap-1 px-2.5 py-1.25 rounded text-sm bg-[#F96302] hover:bg-[#E85500] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
           title="Find at Home Depot"
         >
           <span>🏠</span>
@@ -38,7 +38,7 @@ export default function StoreButtons({ partName, className = '' }: StoreButtonsP
           href={links.lowes}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 px-3 py-1.5 rounded text-sm bg-[#004990] hover:bg-[#003D7A] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+          className="flex items-center gap-1 px-2.5 py-1.25 rounded text-sm bg-[#004990] hover:bg-[#003D7A] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
           title="Find at Lowe's"
         >
           <span>🔵</span>
@@ -49,7 +49,7 @@ export default function StoreButtons({ partName, className = '' }: StoreButtonsP
           href={links.walmart}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 px-3 py-1.5 rounded text-sm bg-[#0071CE] hover:bg-[#005FA3] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+          className="flex items-center gap-1 px-2.5 py-1.25 rounded text-sm bg-[#0071CE] hover:bg-[#005FA3] text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
           title="Find at Walmart"
         >
           <span>🛒</span>
