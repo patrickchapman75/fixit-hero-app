@@ -311,55 +311,53 @@ export default function Scanner() {
       )}
 
       {showCamera && (
-        <>
-          <div className="rounded-2xl overflow-hidden border-4 border-orange-500 shadow-2xl bg-slate-900">
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              videoConstraints={{
-                facingMode: facingMode // Use back camera by default, can be toggled
-              }}
-              className="w-full"
-            />
-          </div>
-          <div className="flex flex-col gap-2 justify-center mt-4 px-4 sm:flex-row sm:flex-wrap sm:gap-1 sm:max-w-md">
-            <div className="flex gap-1 justify-center">
-              <button
-                onClick={toggleFlash}
-                className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-yellow-500 hover:bg-yellow-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
-                title="Toggle flash/torch"
-              >
-                <span>{flashEnabled ? '🔦' : '⚡'}</span>
-                <span>Flash</span>
-              </button>
-              <button
-                onClick={capture}
-                className="flex items-center justify-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
-              >
-                <span>📷</span>
-                <span>Snap Issue</span>
-              </button>
-            </div>
-            <div className="flex gap-1 justify-center">
-              <button
-                onClick={switchCamera}
-                className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
-                title={`Switch to ${facingMode === "user" ? "back" : "front"} camera`}
-              >
-                <span>🔄</span>
-                <span>Switch Camera</span>
-              </button>
-              <button
-                onClick={() => setShowCamera(false)}
-                className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-slate-600 hover:bg-slate-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
-              >
-                <span>❌</span>
-                <span>Cancel</span>
-              </button>
-            </div>
-          </div>
-        </>
+        <div className="relative rounded-2xl overflow-hidden border-4 border-orange-500 shadow-2xl bg-slate-900">
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{
+              facingMode: facingMode // Use back camera by default, can be toggled
+            }}
+            className="w-full"
+          />
+
+          {/* Camera overlay buttons */}
+          <button
+            onClick={switchCamera}
+            className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+            title={`Switch to ${facingMode === "user" ? "back" : "front"} camera`}
+          >
+            <span>🔄</span>
+          </button>
+
+          <button
+            onClick={toggleFlash}
+            className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-slate-800 hover:bg-slate-700 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-lg border border-slate-600"
+            title="Toggle flash/torch"
+          >
+            <span>{flashEnabled ? '🔦' : '⚡'}</span>
+          </button>
+        </div>
+      )}
+
+      {showCamera && (
+        <div className="flex gap-2 justify-center mt-4 px-4">
+          <button
+            onClick={capture}
+            className="flex items-center justify-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+          >
+            <span>📷</span>
+            <span>Snap Issue</span>
+          </button>
+          <button
+            onClick={() => setShowCamera(false)}
+            className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-slate-600 hover:bg-slate-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+          >
+            <span>❌</span>
+            <span>Cancel</span>
+          </button>
+        </div>
       )}
 
       {showTextInput && capturedImage && (
