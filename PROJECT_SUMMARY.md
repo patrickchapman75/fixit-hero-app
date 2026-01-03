@@ -1,7 +1,7 @@
 # Project Summary (Context Save File)
 
 ## 🎯 Current Goal
-[Describe what you are currently building]
+All core PWA features, Google OAuth authentication, and shopping list functionality (including parts & tools with quantities) are now fully implemented and working for both development and production environments.
 
 ## 🛠 Tech Stack
 - React 18.3.1 / Vite 5.4.2
@@ -48,6 +48,9 @@
 - Project initialization with Vite
 - .cursor/rules setup (000, 100, 999)
 - .cursorignore configured
+- Implemented quantity counters for "Tools" in AI Hero Report (Scanner.tsx).
+- Fixed Supabase shopping list unique constraint in `shopping_list_items` table to `UNIQUE(user_id, issue_id, name)`.
+- Resolved Google OAuth redirect issues for both local development and custom production domain (`fixit-hero.com`).
 
 ## ⏳ Active Work / Next Steps
 1. ...

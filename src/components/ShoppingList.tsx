@@ -173,11 +173,12 @@ export default function ShoppingList() {
               placeholder="Enter item name..."
               className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-orange-400"
             />
-            <div className="flex gap-3">
+            {/* Mobile-responsive layout */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <select
                 value={selectedIssueId}
                 onChange={(e) => setSelectedIssueId(e.target.value)}
-                className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-orange-400"
+                className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-orange-400 text-sm"
               >
                 <option value="general">General Items</option>
                 {issueLists.map((issue) => (
@@ -186,30 +187,34 @@ export default function ShoppingList() {
                   </option>
                 ))}
               </select>
-              <div className="flex items-center gap-1">
+
+              <div className="flex items-center justify-between sm:justify-start gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-slate-400 sm:hidden">Qty:</span>
+                  <button
+                    type="button"
+                    onClick={() => setNewItemQuantity(Math.max(1, newItemQuantity - 1))}
+                    className="w-8 h-8 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <span className="w-8 text-center text-sm text-slate-300">{newItemQuantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => setNewItemQuantity(newItemQuantity + 1)}
+                    className="w-8 h-8 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
                 <button
-                  type="button"
-                  onClick={() => setNewItemQuantity(Math.max(1, newItemQuantity - 1))}
-                  className="w-8 h-8 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+                  type="submit"
+                  className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
                 >
-                  <Minus size={14} />
-                </button>
-                <span className="w-8 text-center text-sm text-slate-300">{newItemQuantity}</span>
-                <button
-                  type="button"
-                  onClick={() => setNewItemQuantity(newItemQuantity + 1)}
-                  className="w-8 h-8 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                >
-                  <Plus size={14} />
+                  <Plus size={16} />
+                  <span className="sm:inline">Add</span>
                 </button>
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-              >
-                <Plus size={16} />
-                Add
-              </button>
             </div>
           </form>
         </div>
@@ -292,28 +297,28 @@ export default function ShoppingList() {
                                 >
                                   <Circle size={24} />
                                 </button>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-white font-medium">{item.name}</span>
-                                    <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-xs text-slate-400 mr-1">Qty:</span>
-                                      <button
-                                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                        className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
-                                        disabled={item.quantity <= 1}
-                                      >
-                                        <Minus size={12} />
-                                      </button>
-                                      <span className="text-sm text-slate-300 min-w-[20px] text-center">{item.quantity}</span>
-                                      <button
-                                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                        className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
-                                      >
-                                        <Plus size={12} />
-                                      </button>
-                                    </div>
-                                      <span className="text-xs text-slate-500">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <span className="text-white font-medium truncate">{item.name}</span>
+                                    <div className="flex items-center justify-between sm:justify-end gap-2">
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-xs text-slate-400 hidden sm:inline">Qty:</span>
+                                        <button
+                                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                          className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                          disabled={item.quantity <= 1}
+                                        >
+                                          <Minus size={12} />
+                                        </button>
+                                        <span className="text-sm text-slate-300 min-w-[20px] text-center">{item.quantity}</span>
+                                        <button
+                                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                          className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                        >
+                                          <Plus size={12} />
+                                        </button>
+                                      </div>
+                                      <span className="text-xs text-slate-500 whitespace-nowrap hidden sm:inline">
                                         {new Date(item.addedAt).toLocaleString()}
                                       </span>
                                     </div>
@@ -351,12 +356,12 @@ export default function ShoppingList() {
                                 >
                                   <CheckCircle2 size={24} className="fill-orange-500" />
                                 </button>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-slate-400 line-through">{item.name}</span>
-                                    <div className="flex items-center gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                                    <span className="text-slate-400 line-through truncate">{item.name}</span>
+                                    <div className="flex items-center justify-end gap-2">
                                       <span className="text-sm text-slate-500">×{item.quantity}</span>
-                                      <span className="text-xs text-slate-500">
+                                      <span className="text-xs text-slate-500 whitespace-nowrap hidden sm:inline">
                                         {new Date(item.addedAt).toLocaleString()}
                                       </span>
                                     </div>

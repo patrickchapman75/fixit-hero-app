@@ -118,10 +118,18 @@ export default function Scanner() {
     const issueTitle = textIssue.trim() || extractIssueTitle(results) || "Repair Analysis";
 
     // Create items with quantities
-    const itemsWithQuantities = allParts.map(part => ({
-      name: part,
-      quantity: partsQuantities[part] || 1
+    const itemsWithQuantities = allParts.map(item => ({
+      name: item,
+      quantity: partsQuantities[item] || 1
     }));
+
+    console.log('--- Add to Shopping List Debug ---');
+    console.log('Issue ID:', issueId);
+    console.log('Issue Title:', issueTitle);
+    console.log('All Parts (from state):', allParts);
+    console.log('Parts Quantities (from state):', partsQuantities);
+    console.log('Items with Quantities (sent to service):', itemsWithQuantities);
+    console.log('--- End Add to Shopping List Debug ---');
 
     try {
       await addToIssueShoppingList(issueId, issueTitle, itemsWithQuantities);
@@ -186,6 +194,15 @@ export default function Scanner() {
     setCategorizedParts(categorized);
     setPartsAdded([]); // Reset parts added state
 
+    // Initialize quantities for all parts and tools to 1 if not already set
+    const initialQuantities: Record<string, number> = {};
+    [...categorized.parts, ...categorized.tools].forEach(item => {
+      if (!(item in partsQuantities)) {
+        initialQuantities[item] = 1;
+      }
+    });
+    setPartsQuantities(prev => ({ ...prev, ...initialQuantities }));
+
     setLoading(false);
   };
 
@@ -203,6 +220,15 @@ export default function Scanner() {
     setAllParts(allItems);
     setCategorizedParts(categorized);
     setPartsAdded([]); // Reset parts added state
+
+    // Initialize quantities for all parts and tools to 1 if not already set
+    const initialQuantities: Record<string, number> = {};
+    [...categorized.parts, ...categorized.tools].forEach(item => {
+      if (!(item in partsQuantities)) {
+        initialQuantities[item] = 1;
+      }
+    });
+    setPartsQuantities(prev => ({ ...prev, ...initialQuantities }));
 
     setLoading(false);
   };
@@ -480,7 +506,32 @@ export default function Scanner() {
                           >
                             <Trash2 size={14} />
                           </button>
-                          <h4 className="text-white font-semibold mb-2 pr-8">{tool}</h4>
+                          <div className="flex items-center justify-between mb-2 pr-8">
+                            <h4 className="text-white font-semibold">{tool}</h4>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-slate-400 mr-1">Quantity: </span>
+                              <button
+                                onClick={() => {
+                                  const currentQuantity = partsQuantities[tool] || 1;
+                                  setPartsQuantities(prev => ({ ...prev, [tool]: Math.max(1, currentQuantity - 1) }));
+                                }}
+                                className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                disabled={(partsQuantities[tool] || 1) <= 1}
+                              >
+                                <Minus size={12} />
+                              </button>
+                              <span className="text-sm text-slate-300 min-w-[20px] text-center">{partsQuantities[tool] || 1}</span>
+                              <button
+                                onClick={() => {
+                                  const currentQuantity = partsQuantities[tool] || 1;
+                                  setPartsQuantities(prev => ({ ...prev, [tool]: currentQuantity + 1 }));
+                                }}
+                                className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                              >
+                                <Plus size={12} />
+                              </button>
+                            </div>
+                          </div>
                           <StoreButtons partName={tool} />
                         </div>
                       ))}
@@ -491,36 +542,37 @@ export default function Scanner() {
             </div>
           )}
 
-          {allParts.length > 0 && partsAdded.length === 0 && (
-            <div className="mb-6">
-              <button
-                onClick={addPartsToShoppingList}
-                className="w-full bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
-              >
-                <span>🛒</span>
-                Add {allParts.length} {allParts.length === 1 ? 'Item' : 'Items'} to Shopping List
-              </button>
-            </div>
-          )}
+          <div className="space-y-4 mt-6"> {/* Added a div to wrap the following elements */}
+            {allParts.length > 0 && partsAdded.length === 0 && (
+              <div className="mb-6">
+                <button
+                  onClick={addPartsToShoppingList}
+                  className="w-full bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>🛒</span>
+                  Add {allParts.length} {allParts.length === 1 ? 'Item' : 'Items'} to Shopping List
+                </button>
+              </div>
+            )}
 
-          {partsAdded.length > 0 && (
-            <div className="bg-green-900/30 border border-green-700 rounded-xl p-4 mb-4">
-              <p className="text-green-400 font-semibold mb-2">✓ Added {partsAdded.length} {partsAdded.length === 1 ? 'item' : 'items'} to Shopping List</p>
-              <ul className="text-green-300 text-sm space-y-1">
-                {partsAdded.map((part, idx) => (
-                  <li key={idx}>• {part}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-
-          <button 
-            onClick={reset}
-            className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold text-slate-300 transition-colors"
-          >
-            New Issue
-          </button>
+            {partsAdded.length > 0 && (
+              <div className="bg-green-900/30 border border-green-700 rounded-xl p-4 mb-4">
+                <p className="text-green-400 font-semibold mb-2">✓ Added {partsAdded.length} {partsAdded.length === 1 ? 'item' : 'items'} to Shopping List</p>
+                <ul className="text-green-300 text-sm space-y-1">
+                  {partsAdded.map((part, idx) => (
+                    <li key={idx}>• {part}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <button 
+              onClick={reset}
+              className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold text-slate-300 transition-colors"
+            >
+              New Issue
+            </button>
+          </div> {/* End new wrapper div */}
         </div>
       )}
     </div>

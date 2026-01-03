@@ -86,6 +86,12 @@ CREATE TABLE IF NOT EXISTS shopping_list_items (
   UNIQUE(user_id, issue_id, name) -- Prevent duplicate items per user/issue
 );
 
+-- If you previously had UNIQUE(user_id, name) and need to update it, run this:
+-- ALTER TABLE shopping_list_items
+-- DROP CONSTRAINT IF EXISTS shopping_list_items_user_id_name_key;
+-- ALTER TABLE shopping_list_items
+-- ADD CONSTRAINT unique_user_issue_item UNIQUE (user_id, issue_id, name);
+
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_tasks ENABLE ROW LEVEL SECURITY;
