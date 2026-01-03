@@ -325,7 +325,7 @@ export default function Scanner() {
           {/* Camera overlay buttons */}
           <button
             onClick={switchCamera}
-            className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+            className="absolute top-1 left-1 flex items-center justify-center w-10 h-10 rounded-full text-2xl text-white hover:text-gray-200 font-medium transition-all transform hover:scale-110 active:scale-95"
             title={`Switch to ${facingMode === "user" ? "back" : "front"} camera`}
           >
             <span>🔄</span>
@@ -333,7 +333,7 @@ export default function Scanner() {
 
           <button
             onClick={toggleFlash}
-            className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-slate-800 hover:bg-slate-700 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-lg border border-slate-600"
+            className="absolute top-1 right-1 flex items-center justify-center w-10 h-10 rounded-full text-2xl text-white hover:text-gray-200 font-medium transition-all transform hover:scale-110 active:scale-95"
             title="Toggle flash/torch"
           >
             <span>{flashEnabled ? '🔦' : '⚡'}</span>
@@ -345,14 +345,14 @@ export default function Scanner() {
         <div className="flex gap-2 justify-center mt-4 px-4">
           <button
             onClick={capture}
-            className="flex items-center justify-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+            className="flex items-center justify-center gap-1 px-[10.3px] py-[5.5px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
           >
             <span>📷</span>
             <span>Snap Issue</span>
           </button>
           <button
             onClick={() => setShowCamera(false)}
-            className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-slate-600 hover:bg-slate-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+            className="flex items-center gap-1 px-[10.3px] py-[5.5px] rounded text-sm bg-slate-600 hover:bg-slate-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
           >
             <span>❌</span>
             <span>Cancel</span>
