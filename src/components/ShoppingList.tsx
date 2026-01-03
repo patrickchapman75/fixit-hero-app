@@ -294,76 +294,157 @@ export default function ShoppingList() {
 
                 {expandedIssues.has(issueList.issueId) && (
                   <div className="space-y-4">
-                    {/* Active Items */}
-                    {activeItems.length > 0 && (
-                      <div>
-                        <h4 className="text-lg font-semibold text-slate-300 mb-3">To Buy</h4>
-                        <div className="space-y-4">
-                          {activeItems.map((item) => (
-                            <div
-                              key={item.id}
-                              className="bg-slate-900 rounded-xl p-4 border border-slate-700 hover:border-slate-600 transition-all"
-                            >
-                              <div className="flex items-center gap-4 mb-2">
-                                <button
-                                  onClick={() => handleToggle(item.id)}
-                                  className="flex-shrink-0 text-slate-400 hover:text-orange-400 transition-colors"
-                                >
-                                  <Circle size={24} />
-                                </button>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex flex-col gap-1">
-                                    {/* Item name - full on mobile, truncate on larger screens */}
-                                    <span className="text-white font-medium sm:truncate">{item.name}</span>
+                    {/* Parts Section */}
+                    {(() => {
+                      const parts = activeItems.filter(item => categorizeItem(item.name) === 'part');
+                      return parts.length > 0 ? (
+                        <div>
+                          <h4 className="text-lg font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                            🔧 Parts ({parts.length})
+                          </h4>
+                          <div className="space-y-4">
+                            {parts.map((item) => (
+                              <div
+                                key={item.id}
+                                className="bg-slate-900 rounded-xl p-4 border border-slate-700 hover:border-slate-600 transition-all"
+                              >
+                                <div className="flex items-center gap-4 mb-2">
+                                  <button
+                                    onClick={() => handleToggle(item.id)}
+                                    className="flex-shrink-0 text-slate-400 hover:text-orange-400 transition-colors"
+                                  >
+                                    <Circle size={24} />
+                                  </button>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex flex-col gap-1">
+                                      {/* Item name - full on mobile, truncate on larger screens */}
+                                      <span className="text-white font-medium sm:truncate">{item.name}</span>
 
-                                    {/* Mobile: Show compact info, Desktop: Show expanded layout */}
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-xs text-slate-400">Qty:</span>
-                                          <button
-                                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                            className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
-                                            disabled={item.quantity <= 1}
-                                          >
-                                            <Minus size={12} />
-                                          </button>
-                                          <span className="text-sm text-slate-300 min-w-[20px] text-center">{item.quantity}</span>
-                                          <button
-                                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                            className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
-                                          >
-                                            <Plus size={12} />
-                                          </button>
+                                      {/* Mobile: Show compact info, Desktop: Show expanded layout */}
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex items-center gap-1">
+                                            <span className="text-xs text-slate-400">Qty:</span>
+                                            <button
+                                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                              className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                              disabled={item.quantity <= 1}
+                                            >
+                                              <Minus size={12} />
+                                            </button>
+                                            <span className="text-sm text-slate-300 min-w-[20px] text-center">{item.quantity}</span>
+                                            <button
+                                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                              className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                            >
+                                              <Plus size={12} />
+                                            </button>
+                                          </div>
+
+                                          {/* Mobile timestamp - show date only, Desktop: full datetime */}
+                                          <span className="text-xs text-slate-500 sm:hidden">
+                                            {new Date(item.addedAt).toLocaleDateString()}
+                                          </span>
                                         </div>
 
-                                        {/* Mobile timestamp - show date only, Desktop: full datetime */}
-                                        <span className="text-xs text-slate-500 sm:hidden">
-                                          {new Date(item.addedAt).toLocaleDateString()}
+                                        {/* Desktop timestamp */}
+                                        <span className="text-xs text-slate-500 hidden sm:inline whitespace-nowrap">
+                                          {new Date(item.addedAt).toLocaleString()}
                                         </span>
                                       </div>
-
-                                      {/* Desktop timestamp */}
-                                      <span className="text-xs text-slate-500 hidden sm:inline whitespace-nowrap">
-                                        {new Date(item.addedAt).toLocaleString()}
-                                      </span>
                                     </div>
                                   </div>
+                                  <button
+                                    onClick={() => handleRemove(item.id)}
+                                    className="flex-shrink-0 text-slate-500 hover:text-red-400 transition-colors p-1"
+                                    title="Delete item"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
                                 </div>
-                                <button
-                                  onClick={() => handleRemove(item.id)}
-                                  className="flex-shrink-0 text-slate-500 hover:text-red-400 transition-colors p-1"
-                                  title="Delete item"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
+                                <StoreButtons partName={item.name} />
                               </div>
-                              <StoreButtons partName={item.name} />
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      ) : null;
+                    })()}
+
+                    {/* Tools Section */}
+                    {(() => {
+                      const tools = activeItems.filter(item => categorizeItem(item.name) === 'tool');
+                      return tools.length > 0 ? (
+                        <div>
+                          <h4 className="text-lg font-semibold text-green-400 mb-3 flex items-center gap-2">
+                            🔨 Tools ({tools.length})
+                          </h4>
+                          <div className="space-y-4">
+                            {tools.map((item) => (
+                              <div
+                                key={item.id}
+                                className="bg-slate-900 rounded-xl p-4 border border-slate-700 hover:border-slate-600 transition-all"
+                              >
+                                <div className="flex items-center gap-4 mb-2">
+                                  <button
+                                    onClick={() => handleToggle(item.id)}
+                                    className="flex-shrink-0 text-slate-400 hover:text-orange-400 transition-colors"
+                                  >
+                                    <Circle size={24} />
+                                  </button>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex flex-col gap-1">
+                                      {/* Item name - full on mobile, truncate on larger screens */}
+                                      <span className="text-white font-medium sm:truncate">{item.name}</span>
+
+                                      {/* Mobile: Show compact info, Desktop: Show expanded layout */}
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex items-center gap-1">
+                                            <span className="text-xs text-slate-400">Qty:</span>
+                                            <button
+                                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                              className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                              disabled={item.quantity <= 1}
+                                            >
+                                              <Minus size={12} />
+                                            </button>
+                                            <span className="text-sm text-slate-300 min-w-[20px] text-center">{item.quantity}</span>
+                                            <button
+                                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                              className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-colors"
+                                            >
+                                              <Plus size={12} />
+                                            </button>
+                                          </div>
+
+                                          {/* Mobile timestamp - show date only, Desktop: full datetime */}
+                                          <span className="text-xs text-slate-500 sm:hidden">
+                                            {new Date(item.addedAt).toLocaleDateString()}
+                                          </span>
+                                        </div>
+
+                                        {/* Desktop timestamp */}
+                                        <span className="text-xs text-slate-500 hidden sm:inline whitespace-nowrap">
+                                          {new Date(item.addedAt).toLocaleString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => handleRemove(item.id)}
+                                    className="flex-shrink-0 text-slate-500 hover:text-red-400 transition-colors p-1"
+                                    title="Delete item"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                                <StoreButtons partName={item.name} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
 
                     {/* Completed Items */}
                     {completedItems.length > 0 && (
