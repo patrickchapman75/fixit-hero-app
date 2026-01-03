@@ -18,11 +18,39 @@ export default function Scanner() {
   const [categorizedParts, setCategorizedParts] = useState<{parts: string[], tools: string[]}>({parts: [], tools: []});
   const [partsQuantities, setPartsQuantities] = useState<Record<string, number>>({});
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  const [flashEnabled, setFlashEnabled] = useState(false);
 
   // Function to switch between front and back camera
   const switchCamera = useCallback(() => {
     setFacingMode(current => current === "user" ? "environment" : "user");
   }, []);
+
+  // Function to toggle flash/torch
+  const toggleFlash = useCallback(async () => {
+    try {
+      const stream = webcamRef.current?.video?.srcObject as MediaStream;
+      if (stream) {
+        const videoTrack = stream.getVideoTracks()[0];
+        const capabilities = videoTrack.getCapabilities() as any;
+
+        if (capabilities.torch) {
+          await videoTrack.applyConstraints({
+            advanced: [{ torch: !flashEnabled } as any]
+          });
+          setFlashEnabled(!flashEnabled);
+        } else {
+          // Fallback: try to set torch directly
+          const constraints = {
+            advanced: [{ torch: !flashEnabled } as any]
+          };
+          await videoTrack.applyConstraints(constraints);
+          setFlashEnabled(!flashEnabled);
+        }
+      }
+    } catch (error) {
+      console.warn('Flash not supported on this device:', error);
+    }
+  }, [flashEnabled]);
 
   // Function to clean asterisks from AI responses while preserving them in emails and social media
   const cleanAsterisks = (text: string): string => {
@@ -295,15 +323,25 @@ export default function Scanner() {
               className="w-full"
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-1 justify-center mt-4 px-4">
-            <button
-              onClick={capture}
-              className="flex items-center justify-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
-            >
-              <span>📷</span>
-              <span>Snap Issue</span>
-            </button>
-            <div className="flex gap-1 justify-center sm:justify-start">
+          <div className="flex flex-col gap-2 justify-center mt-4 px-4 sm:flex-row sm:flex-wrap sm:gap-1 sm:max-w-md">
+            <div className="flex gap-1 justify-center">
+              <button
+                onClick={toggleFlash}
+                className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-yellow-500 hover:bg-yellow-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+                title="Toggle flash/torch"
+              >
+                <span>{flashEnabled ? '🔦' : '⚡'}</span>
+                <span>Flash</span>
+              </button>
+              <button
+                onClick={capture}
+                className="flex items-center justify-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-orange-500 hover:bg-orange-400 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+              >
+                <span>📷</span>
+                <span>Snap Issue</span>
+              </button>
+            </div>
+            <div className="flex gap-1 justify-center">
               <button
                 onClick={switchCamera}
                 className="flex items-center gap-1 px-[9.8px] py-[5.25px] rounded text-sm bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all transform hover:scale-105 active:scale-95 shadow-sm"
