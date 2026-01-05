@@ -273,8 +273,8 @@ export function createChatSession() {
      * @returns AsyncGenerator that yields text chunks as they arrive
      */
     async *sendMessageStream(text: string, imageBase64?: string, multimodalHistory?: Array<{role: 'user' | 'model', parts: Array<{text?: string, inlineData?: {data: string, mimeType: string}}>}>): AsyncGenerator<string, void, unknown> {
-      const maxRetries = 3; // Up to 3 attempts as requested
-      const baseDelay = 2000; // 2 seconds base delay, doubling each time
+      const maxRetries = 5; // More retries for rate limits
+      const baseDelay = 3000; // 3 seconds base delay, doubling each time
       let toastId: string | number | null = null;
 
       // Prepare content
@@ -345,10 +345,14 @@ export function createChatSession() {
           } catch (error: any) {
             const errorMsg = error?.message?.toLowerCase() || "";
             const isRateLimit = error?.status === 429 ||
+              error?.status === 429 ||
               errorMsg.includes('quota') ||
               errorMsg.includes('limit') ||
               errorMsg.includes('rate') ||
-              errorMsg.includes('per minute');
+              errorMsg.includes('per minute') ||
+              errorMsg.includes('too many requests') ||
+              errorMsg.includes('resource exhausted') ||
+              errorMsg.includes('exceeded');
 
             if (isRateLimit && retryCount < maxRetries) {
               // Longer exponential backoff for rate limits

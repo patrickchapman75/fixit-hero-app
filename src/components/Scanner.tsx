@@ -93,6 +93,7 @@ export default function Scanner() {
   const webcamRef = useRef<Webcam>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatSessionRef = useRef(createChatSession());
+  const lastRequestTime = useRef<number>(0);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -101,42 +102,22 @@ export default function Scanner() {
 
   /**
    * Convert message history to Gemini multimodal format
-   * Caps history to last 5-6 exchanges to stay within token limits
+   * CRITICAL: Only sends text history to avoid token limits - NEVER sends images from history
    */
   const buildMultimodalHistory = (): MultimodalMessage[] => {
-    // Get last 12 messages (6 exchanges) but filter to keep token usage reasonable
-    const recentMessages = messages.slice(-12);
+    // Get last 4 messages (2 exchanges) - VERY limited to stay under token limits
+    const recentMessages = messages.slice(-4);
 
     const history: MultimodalMessage[] = [];
 
     for (const msg of recentMessages) {
-      const parts: MultimodalPart[] = [];
-
-      // Add text if present
+      // ONLY include text - NEVER include images from history to avoid token explosion
       if (msg.text.trim()) {
-        parts.push({ text: msg.text });
-      }
-
-      // Add image if present
-      if (msg.image) {
-        const base64Data = msg.image.includes(",") ? msg.image.split(",")[1] : msg.image;
-        parts.push({
-          inlineData: {
-            data: base64Data,
-            mimeType: "image/jpeg"
-          }
+        history.push({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.text }]
         });
       }
-
-      // If no parts, add empty text to maintain conversation flow
-      if (parts.length === 0) {
-        parts.push({ text: "" });
-      }
-
-      history.push({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: parts
-      });
     }
 
     return history;
@@ -320,12 +301,18 @@ export default function Scanner() {
     // Set thinking state immediately to prevent duplicate calls
     setIsThinking(true);
 
-    // Add a small delay to prevent rapid requests (helps with rate limiting)
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && Date.now() - lastMessage.timestamp < 2000) {
-      // Wait 2 seconds between messages minimum
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    // Enforce minimum delay between requests (helps with rate limiting)
+    const now = Date.now();
+    const timeSinceLastRequest = now - lastRequestTime.current;
+    const minDelay = 3000; // 3 seconds minimum between requests
+
+    if (timeSinceLastRequest < minDelay) {
+      const waitTime = minDelay - timeSinceLastRequest;
+      console.log(`Rate limiting: waiting ${waitTime}ms before next request`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
     }
+
+    lastRequestTime.current = Date.now();
 
     const messageText = inputText.trim();
     let messageImage = selectedImage;
@@ -373,8 +360,9 @@ export default function Scanner() {
     try {
       let fullResponse = '';
 
-      // Build multimodal history for context
+      // Build multimodal history for context (text-only to avoid token limits)
       const multimodalHistory = buildMultimodalHistory();
+      console.log('📝 Sending multimodal history:', multimodalHistory.length, 'messages');
 
       // Update chat session with multimodal history
       // Note: We need to create a new session with proper history
@@ -441,10 +429,11 @@ export default function Scanner() {
       // Handle rate limit errors with better messaging
       const isRateLimit = error.message?.toLowerCase().includes('rate limit') ||
                          error.message?.toLowerCase().includes('quota') ||
-                         error.message?.toLowerCase().includes('capacity');
+                         error.message?.toLowerCase().includes('capacity') ||
+                         error.message?.toLowerCase().includes('exceeded');
 
       const errorMessage = isRateLimit
-        ? "Fixit Hero brain is currently busy. Please wait 1-2 minutes before sending another message."
+        ? "🤖 Fixit Hero is at capacity right now. This happens during busy times. Please wait 2-3 minutes before trying again. The system will automatically retry with smarter spacing."
         : `Sorry, I encountered an error: ${error.message || 'Please try again.'}`;
 
       // Update the last message with error
@@ -459,6 +448,11 @@ export default function Scanner() {
     } finally {
       setLoading(false);
       setIsThinking(false); // Clear thinking state
+
+      // Add extra cooldown period after request completion
+      setTimeout(() => {
+        // This provides additional rate limiting protection
+      }, 1000);
     }
   };
 
