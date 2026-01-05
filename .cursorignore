@@ -1,14 +1,17 @@
 # Dependencies & Build
 node_modules/
 dist/
-.cursor/
 *.timestamp*
 
+# Cursor - Allow only rules folder
+!.cursor/rules/
+.cursor/*
+
 # Environment & Secrets  
+!.env.example
 .env
 .env.*
 .env.local
-!.env.example
 
 # IDE & System
 .vscode/

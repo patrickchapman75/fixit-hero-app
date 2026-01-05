@@ -24,9 +24,15 @@ export async function getShoppingLists(): Promise<IssueShoppingList[]> {
       return []; // Return empty list for non-authenticated users
     }
 
+    // Join with repairs table to get issue title
     const { data, error } = await supabase
       .from('shopping_list_items')
-      .select('*')
+      .select(`
+        *,
+        repairs!shopping_list_items_issue_id_fkey (
+          title
+        )
+      `)
       .eq('user_id', user.id)
       .order('added_at', { ascending: false });
 
@@ -35,24 +41,17 @@ export async function getShoppingLists(): Promise<IssueShoppingList[]> {
       return [];
     }
 
-    // Group items by issue, handling invalid UUIDs gracefully
+    // Group items by issue
     const issueMap = new Map<string, IssueShoppingList>();
 
     (data || []).forEach(item => {
-      // Handle cases where issue_id might not be a valid UUID
-      let issueId = item.issue_id;
-      let issueTitle = item.issue_title;
-
-      // If issue_id is invalid or missing, use a fallback
-      if (!issueId || typeof issueId !== 'string') {
-        issueId = 'general_fallback';
-        issueTitle = issueTitle || 'General Items';
-      }
+      const issueId = item.issue_id;
+      const issueTitle = item.repairs?.title || 'Unnamed Issue';
 
       if (!issueMap.has(issueId)) {
         issueMap.set(issueId, {
           issueId,
-          issueTitle: issueTitle || 'Unnamed Issue',
+          issueTitle,
           items: [],
           createdAt: new Date(item.added_at).getTime()
         });
@@ -60,8 +59,8 @@ export async function getShoppingLists(): Promise<IssueShoppingList[]> {
 
       issueMap.get(issueId)!.items.push({
         id: item.id,
-        issueId: issueId,
-        issueTitle: issueTitle || 'Unnamed Issue',
+        issueId,
+        issueTitle,
         name: item.name,
         completed: item.completed,
         quantity: item.quantity || 1,
@@ -86,10 +85,10 @@ export async function getShoppingList(): Promise<ShoppingListItem[]> {
 export async function addToShoppingList(parts: string[]): Promise<IssueShoppingList[]> {
   // For backward compatibility, add to a general issue
   const generalIssueId = '550e8400-e29b-41d4-a716-446655440000';
-  return await addToIssueShoppingList(generalIssueId, 'General Repair Items', parts);
+  return await addToIssueShoppingList(generalIssueId, parts);
 }
 
-export async function addToIssueShoppingList(issueId: string, issueTitle: string, parts: string[] | Array<{name: string, quantity: number}>): Promise<IssueShoppingList[]> {
+export async function addToIssueShoppingList(repairId: string, parts: string[] | Array<{name: string, quantity: number}>): Promise<IssueShoppingList[]> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -110,8 +109,7 @@ export async function addToIssueShoppingList(issueId: string, issueTitle: string
 
     const newItems = itemsToAdd.map(item => ({
       user_id: user.id,
-      issue_id: issueId,
-      issue_title: issueTitle,
+      issue_id: repairId,  // Now uses repair ID as foreign key
       name: item.name,
       completed: false,
       quantity: item.quantity
@@ -168,7 +166,7 @@ export async function addToIssueShoppingList(issueId: string, issueTitle: string
   }
 }
 
-export async function addManualShoppingListItem(name: string, quantity: number = 1, issueId?: string, issueTitle?: string): Promise<IssueShoppingList[]> {
+export async function addManualShoppingListItem(name: string, quantity: number = 1, repairId?: string): Promise<IssueShoppingList[]> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -179,8 +177,7 @@ export async function addManualShoppingListItem(name: string, quantity: number =
       .from('shopping_list_items')
       .insert({
         user_id: user.id,
-        issue_id: issueId || 'general',
-        issue_title: issueTitle || 'General Items',
+        issue_id: repairId || 'general',
         name: name.trim(),
         completed: false,
         quantity: quantity

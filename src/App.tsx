@@ -6,6 +6,7 @@ import Scanner from './components/Scanner';
 import MaintenanceChecklist from './components/MaintenanceChecklist';
 import ShoppingList from './components/ShoppingList';
 import UserProfile from './components/UserProfile';
+import SavedRepairs from './components/SavedRepairs';
 import Login from './components/Login';
 import AuthCallback from './components/AuthCallback';
 import { Toaster } from 'sonner'; // Integrated Sonner
@@ -24,7 +25,7 @@ function App() {
   };
 
   const renderView = () => {
-    const protectedRoutes = ['scanner', 'shopping', 'checklist', 'profile'];
+    const protectedRoutes = ['scanner', 'shopping', 'checklist', 'profile', 'repairs'];
 
     if (protectedRoutes.includes(currentView) && !user) {
       return <Home onViewChange={setCurrentView} />;
@@ -39,6 +40,8 @@ function App() {
         return <MaintenanceChecklist />;
       case 'shopping':
         return <ShoppingList />;
+      case 'repairs':
+        return <SavedRepairs />;
       case 'profile':
         return <UserProfile />;
       default:

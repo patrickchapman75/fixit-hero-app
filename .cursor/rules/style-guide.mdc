@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Prefer using camelCase for variable names
