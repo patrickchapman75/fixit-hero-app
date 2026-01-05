@@ -4,8 +4,8 @@ dist/
 *.timestamp*
 
 # Cursor - Allow only rules folder
-!.cursor/rules/
 .cursor/*
+!.cursor/rules/
 
 # Environment & Secrets  
 !.env.example
