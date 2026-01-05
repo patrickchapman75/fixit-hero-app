@@ -272,9 +272,9 @@ export function createChatSession() {
      * @param imageBase64 - Optional base64 image data (with or without data:image prefix)
      * @returns AsyncGenerator that yields text chunks as they arrive
      */
-    async *sendMessageStream(text: string, imageBase64?: string): AsyncGenerator<string, void, unknown> {
-      const maxRetries = 2; // Reduced retries since both models share limits
-      const baseDelay = 3000; // Increased base delay (3 seconds)
+    async *sendMessageStream(text: string, imageBase64?: string, multimodalHistory?: Array<{role: 'user' | 'model', parts: Array<{text?: string, inlineData?: {data: string, mimeType: string}}>}>): AsyncGenerator<string, void, unknown> {
+      const maxRetries = 3; // Up to 3 attempts as requested
+      const baseDelay = 2000; // 2 seconds base delay, doubling each time
       let toastId: string | number | null = null;
 
       // Prepare content
@@ -308,13 +308,22 @@ export function createChatSession() {
               systemInstruction: SYSTEM_INSTRUCTION
             });
 
-            // Get existing history (if any) to maintain context
+            // Use provided multimodal history or get existing history for context
             let history: any[] = [];
-            try {
-              const existingHistory = await chat.getHistory();
-              history = Array.isArray(existingHistory) ? existingHistory : [];
-            } catch (e) {
-              console.warn('Could not get chat history:', e);
+            if (multimodalHistory && multimodalHistory.length > 0) {
+              // Convert multimodal history to Gemini format
+              history = multimodalHistory.flat().map(msg => ({
+                role: msg.role,
+                parts: msg.parts
+              }));
+            } else {
+              // Fallback to existing chat history if no multimodal history provided
+              try {
+                const existingHistory = await chat.getHistory();
+                history = Array.isArray(existingHistory) ? existingHistory : [];
+              } catch (e) {
+                console.warn('Could not get chat history:', e);
+              }
             }
 
             const tempChat = model.startChat({

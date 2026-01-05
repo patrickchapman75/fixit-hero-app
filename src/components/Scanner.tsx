@@ -6,11 +6,66 @@ import { saveRepairDiagnosis } from '../services/repairService';
 import { addToIssueShoppingList } from '../services/shoppingListService';
 import DiagnosisSummaryCard from './DiagnosisSummaryCard';
 
+/**
+ * Compress image to reduce token usage
+ * @param imageData Base64 image data
+ * @param maxWidth Maximum width in pixels (default: 1024)
+ * @param quality JPEG quality (0-1, default: 0.7)
+ * @returns Promise<string> Compressed base64 image data
+ */
+const compressImage = (imageData: string, maxWidth: number = 1024, quality: number = 0.7): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+
+      // Calculate new dimensions
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw and compress
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedData = canvas.toDataURL('image/jpeg', quality);
+
+      resolve(compressedData);
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = imageData;
+  });
+};
+
 interface Message {
   role: 'user' | 'assistant';
   text: string;
   image?: string;
   timestamp: number;
+}
+
+// Multimodal history types for Gemini API
+interface MultimodalPart {
+  text?: string;
+  inlineData?: {
+    data: string;
+    mimeType: string;
+  };
+}
+
+interface MultimodalMessage {
+  role: 'user' | 'model';
+  parts: MultimodalPart[];
 }
 
 interface DiagnosisResult {
@@ -26,6 +81,7 @@ export default function Scanner() {
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false); // Robust debouncing state
   const [diagnosisResult, setDiagnosisResult] = useState<DiagnosisResult | null>(null);
   const [savedRepairId, setSavedRepairId] = useState<string | null>(null);
   const [showDiagnosisCard, setShowDiagnosisCard] = useState(false);
@@ -42,6 +98,49 @@ export default function Scanner() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  /**
+   * Convert message history to Gemini multimodal format
+   * Caps history to last 5-6 exchanges to stay within token limits
+   */
+  const buildMultimodalHistory = (): MultimodalMessage[] => {
+    // Get last 12 messages (6 exchanges) but filter to keep token usage reasonable
+    const recentMessages = messages.slice(-12);
+
+    const history: MultimodalMessage[] = [];
+
+    for (const msg of recentMessages) {
+      const parts: MultimodalPart[] = [];
+
+      // Add text if present
+      if (msg.text.trim()) {
+        parts.push({ text: msg.text });
+      }
+
+      // Add image if present
+      if (msg.image) {
+        const base64Data = msg.image.includes(",") ? msg.image.split(",")[1] : msg.image;
+        parts.push({
+          inlineData: {
+            data: base64Data,
+            mimeType: "image/jpeg"
+          }
+        });
+      }
+
+      // If no parts, add empty text to maintain conversation flow
+      if (parts.length === 0) {
+        parts.push({ text: "" });
+      }
+
+      history.push({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: parts
+      });
+    }
+
+    return history;
+  };
 
 
   /**
@@ -216,7 +315,10 @@ export default function Scanner() {
 
   const handleSend = async () => {
     if (!inputText.trim() && !selectedImage) return;
-    if (loading) return;
+    if (loading || isThinking) return; // Robust debouncing
+
+    // Set thinking state immediately to prevent duplicate calls
+    setIsThinking(true);
 
     // Add a small delay to prevent rapid requests (helps with rate limiting)
     const lastMessage = messages[messages.length - 1];
@@ -226,7 +328,19 @@ export default function Scanner() {
     }
 
     const messageText = inputText.trim();
-    const messageImage = selectedImage;
+    let messageImage = selectedImage;
+
+    // Compress image if present to reduce token usage
+    if (messageImage) {
+      try {
+        console.log('Compressing image...');
+        messageImage = await compressImage(messageImage, 1024, 0.7);
+        console.log('Image compressed successfully');
+      } catch (error) {
+        console.warn('Failed to compress image, using original:', error);
+        // Continue with original image if compression fails
+      }
+    }
 
     // Add user message
     const userMessage: Message = {
@@ -247,7 +361,7 @@ export default function Scanner() {
 
     // Get AI response with streaming
     setLoading(true);
-    
+
     // Add placeholder AI message immediately
     const placeholderMessage: Message = {
       role: 'assistant',
@@ -255,14 +369,22 @@ export default function Scanner() {
       timestamp: Date.now(),
     };
     setMessages(prev => [...prev, placeholderMessage]);
-    
+
     try {
       let fullResponse = '';
-      
-      // Stream the response chunks
+
+      // Build multimodal history for context
+      const multimodalHistory = buildMultimodalHistory();
+
+      // Update chat session with multimodal history
+      // Note: We need to create a new session with proper history
+      // The sendMessageStream will handle this internally
+
+      // Stream the response chunks with multimodal history
       const stream = chatSessionRef.current.sendMessageStream(
         messageText || 'Please analyze this image.',
-        messageImage || undefined
+        messageImage || undefined,
+        multimodalHistory
       );
 
       for await (const chunk of stream) {
@@ -336,6 +458,7 @@ export default function Scanner() {
       });
     } finally {
       setLoading(false);
+      setIsThinking(false); // Clear thinking state
     }
   };
 
@@ -585,7 +708,7 @@ export default function Scanner() {
           {/* Send Button */}
           <button
             onClick={handleSend}
-            disabled={loading || chatDisabled || (!inputText.trim() && !selectedImage)}
+            disabled={loading || isThinking || chatDisabled || (!inputText.trim() && !selectedImage)}
             className="flex-shrink-0 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors"
           >
             {loading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}

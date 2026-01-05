@@ -91,4 +91,4 @@ Core PWA features are complete. Now implementing conversational AI to enable ite
 - Diagnosis extraction from AI's structured text format (IDENTIFIED ISSUE, REQUIRED PARTS, etc.) instead of JSON.
 - Database normalization with repairs.id as foreign key in shopping_list_items table.
 - Real-time streaming responses with typing effects for enhanced user experience.
-- Robust rate limiting with exponential backoff, model fallback, and user-friendly error messages.
+- Advanced rate limiting with exponential backoff (2s base, 3 retries), model fallback, and user-friendly error messages. Image compression (1024px max width, 70% JPEG quality) to reduce token usage. Robust UI debouncing with isThinking state to prevent duplicate API calls. Multimodal history management maintaining text and images in last 5-6 exchanges for optimal context.
