@@ -70,7 +70,23 @@ CREATE TABLE IF NOT EXISTS maintenance_history (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   completed_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   notes TEXT,
-  parts_used TEXT[] DEFAULT '{}'
+  parts_used JSONB DEFAULT '[]',
+  tools_used JSONB DEFAULT '[]',
+  total_cost DECIMAL(10,2)
+);
+
+-- Create maintenance_parts table
+CREATE TABLE IF NOT EXISTS maintenance_parts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('part', 'tool')),
+  affiliate_links JSONB DEFAULT '{}',
+  estimated_cost DECIMAL(10,2),
+  last_purchased TIMESTAMP WITH TIME ZONE,
+  purchase_frequency TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
 -- Create shopping_list_items table
@@ -86,6 +102,41 @@ CREATE TABLE IF NOT EXISTS shopping_list_items (
   UNIQUE(user_id, issue_id, name) -- Prevent duplicate items per user/issue
 );
 
+-- Migration: If you have existing maintenance_history data, run these commands in order:
+-- Step 1: Add new columns
+ALTER TABLE maintenance_history ADD COLUMN IF NOT EXISTS tools_used JSONB DEFAULT '[]';
+ALTER TABLE maintenance_history ADD COLUMN IF NOT EXISTS total_cost DECIMAL(10,2);
+
+-- Step 2: Convert parts_used column safely (TEXT[] to JSONB)
+-- Create a temporary function for the conversion
+CREATE OR REPLACE FUNCTION convert_text_array_to_jsonb(text_array TEXT[])
+RETURNS JSONB AS $$
+BEGIN
+  IF text_array IS NULL THEN
+    RETURN '[]'::jsonb;
+  ELSIF array_length(text_array, 1) IS NULL OR array_length(text_array, 1) = 0 THEN
+    RETURN '[]'::jsonb;
+  ELSE
+    RETURN (
+      SELECT jsonb_agg(trim(elem))
+      FROM unnest(text_array) AS elem
+    );
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- First, drop the default
+ALTER TABLE maintenance_history ALTER COLUMN parts_used DROP DEFAULT;
+
+-- Then change the type using the function
+ALTER TABLE maintenance_history ALTER COLUMN parts_used TYPE JSONB USING convert_text_array_to_jsonb(parts_used);
+
+-- Add back the default
+ALTER TABLE maintenance_history ALTER COLUMN parts_used SET DEFAULT '[]'::jsonb;
+
+-- Clean up the temporary function
+DROP FUNCTION convert_text_array_to_jsonb(TEXT[]);
+
 -- If you previously had UNIQUE(user_id, name) and need to update it, run this:
 -- ALTER TABLE shopping_list_items
 -- DROP CONSTRAINT IF EXISTS shopping_list_items_user_id_name_key;
@@ -96,6 +147,7 @@ CREATE TABLE IF NOT EXISTS shopping_list_items (
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE maintenance_parts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shopping_list_items ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
@@ -137,6 +189,19 @@ CREATE POLICY "Users can insert own shopping list items" ON shopping_list_items
 
 CREATE POLICY "Users can update own shopping list items" ON shopping_list_items
   FOR UPDATE USING (auth.uid() = user_id);
+
+-- Maintenance parts policies
+CREATE POLICY "Users can view own maintenance parts" ON maintenance_parts
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own maintenance parts" ON maintenance_parts
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own maintenance parts" ON maintenance_parts
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own maintenance parts" ON maintenance_parts
+  FOR DELETE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete own shopping list items" ON shopping_list_items
   FOR DELETE USING (auth.uid() = user_id);
@@ -185,6 +250,10 @@ CREATE TRIGGER handle_updated_at_profiles
 
 CREATE TRIGGER handle_updated_at_maintenance_tasks
   BEFORE UPDATE ON maintenance_tasks
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+CREATE TRIGGER handle_updated_at_maintenance_parts
+  BEFORE UPDATE ON maintenance_parts
   FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
 CREATE TRIGGER handle_updated_at_shopping_list_items

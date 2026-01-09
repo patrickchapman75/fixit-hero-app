@@ -64,6 +64,13 @@ export default function Home({ onViewChange }: HomeProps) {
           <h4 className="text-lg font-semibold text-white mb-2 group-hover:text-orange-400 transition-colors">✅ Maintenance Checklist</h4>
           <p className="text-slate-400 text-sm group-hover:text-slate-300 transition-colors">Track your home maintenance tasks and never miss an important upkeep item.</p>
         </button>
+        <button
+          onClick={() => onViewChange('parts')}
+          className="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-orange-500 hover:bg-slate-700 transition-all text-left cursor-pointer group"
+        >
+          <h4 className="text-lg font-semibold text-white mb-2 group-hover:text-orange-400 transition-colors">🔧 Parts & Tools</h4>
+          <p className="text-slate-400 text-sm group-hover:text-slate-300 transition-colors">Manage your maintenance parts inventory and find affiliate links for re-purchase.</p>
+        </button>
       </div>
       <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-lg">
         <div className="flex items-center gap-3 mb-4">

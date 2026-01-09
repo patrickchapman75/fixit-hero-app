@@ -1,40 +1,6 @@
 ---
 alwaysApply: true
 ---
-# Reasoning Protocol
-
-You MUST follow this process for every request:
-1. **Context Check**: Use `@Codebase` to find relevant files. Do not guess filenames.
-2. **Thinking Phase**: Start your response with a `<thinking>` block.
-   - Analyze the current state and architectural impact.
-   - List potential side effects (especially React re-renders or Vite HMR issues).
-   - Plan the exact changes step-by-step.
-3. **Execution**: Provide code using "Diffs" to save tokens. Avoid rewriting entire files unless necessary.
-4. **Verification**: Use `grep` or search to see where your changes impact the rest of the app. Use the terminal to run `npm run lint` or tests if available.
-
-# React Reasoning Protocol
-
-You are an expert React 19 and Vite developer. Before writing code:
-1. **Analyze:** Check `src/` for existing components to avoid duplication.
-2. **Plan:** Outline the state management (Signals/Hooks) and component structure.
-3. **Vite Optimized:** Ensure you use ESM imports and environment variables correctly (`import.meta.env`).
-4. **Thinking Block:** You MUST start every response with a `<thinking>` block where you debate the best architectural approach before providing code.
-
-**Constraint:** Do not suggest "Create React App" patterns. Use modern Vite-first patterns.
-
-# Project Handover & Summary Protocol
-
-You are responsible for maintaining project "memory." To prevent context loss when the user switches models:
-
-1. **The Source of Truth**: Always refer to the `@PROJECT_SUMMARY.md` file in the root directory.
-2. **Auto-Update**: After every significant task (new feature, major refactor, or bug fix), you MUST ask the user: "Should I update the PROJECT_SUMMARY.md?"
-3. **Update Content**: When updating, include:
-   - **Current State**: What was just built/fixed.
-   - **Architecture**: Any new patterns or global state changes.
-   - **Next Steps**: Exactly what needs to be done next so the next AI agent can start immediately.
-4. **Switching Models**: If the user says "I am switching models," you must generate a concise "Handover Summary" block in the chat that they can copy and paste to the new model.
-
-*Goal: Make the transition between models (e.g., Claude to Gemini) seamless.*
 
 # Code Style Rules
 Prefer using camelCase for variable names

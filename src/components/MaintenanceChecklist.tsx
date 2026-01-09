@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle2, Circle, Trash2, Plus, ChevronDown, ChevronUp, Clock, FileText, Wrench } from 'lucide-react';
+import { CheckCircle2, Circle, Trash2, Plus, ChevronDown, ChevronUp, Clock, FileText, Wrench, AlertTriangle, Calendar, ShoppingCart, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getMaintenanceTasks,
@@ -10,8 +10,13 @@ import {
   deleteMaintenanceTask,
   formatDate,
   formatRelativeTime,
-  type MaintenanceTask
+  formatDueDate,
+  getStatusColor,
+  getStatusIcon,
+  type MaintenanceTask,
+  type MaintenancePart
 } from '../services/maintenanceService';
+import { generateAffiliateLinks } from '../services/affiliateService';
 
 export default function MaintenanceChecklist() {
   const { user } = useAuth();
@@ -125,6 +130,36 @@ export default function MaintenanceChecklist() {
   const totalCount = tasks.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+  const overdueCount = tasks.filter(t => t.status === 'overdue').length;
+  const dueSoonCount = tasks.filter(t => t.status === 'due').length;
+
+  // PartBadge component for displaying parts with affiliate links
+  const PartBadge: React.FC<{ part: MaintenancePart }> = ({ part }) => {
+    const affiliateLinks = generateAffiliateLinks(part.name);
+    const hasAffiliateLinks = Object.values(affiliateLinks).some(link => link);
+
+    return (
+      <div className="inline-flex items-center gap-1 px-2 py-1 bg-slate-800 rounded-lg text-xs text-slate-300 border border-slate-700">
+        <Wrench size={12} />
+        <span>{part.name}</span>
+        {part.estimatedCost && (
+          <span className="text-green-400 font-medium">${part.estimatedCost}</span>
+        )}
+        {hasAffiliateLinks && (
+          <a
+            href={affiliateLinks.amazon || affiliateLinks.homeDepot || affiliateLinks.lowes || affiliateLinks.walmart}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-1 text-orange-400 hover:text-orange-300 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink size={10} />
+          </a>
+        )}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -162,10 +197,31 @@ export default function MaintenanceChecklist() {
             <span className="text-sm font-bold text-orange-400">{completedCount} / {totalCount}</span>
           </div>
           <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-            <div 
+            <div
               className="bg-gradient-to-r from-orange-600 to-orange-500 h-full transition-all duration-500 rounded-full"
               style={{ width: `${progress}%` }}
             />
+          </div>
+
+          {/* Status Overview */}
+          <div className="mt-3 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-3">
+              {overdueCount > 0 && (
+                <span className="flex items-center gap-1 text-red-400">
+                  <AlertTriangle size={12} />
+                  {overdueCount} overdue
+                </span>
+              )}
+              {dueSoonCount > 0 && (
+                <span className="flex items-center gap-1 text-yellow-400">
+                  <Calendar size={12} />
+                  {dueSoonCount} due soon
+                </span>
+              )}
+            </div>
+            <span className="text-slate-500">
+              {tasks.filter(t => t.status === 'upcoming').length} upcoming
+            </span>
           </div>
         </div>
       </div>
@@ -239,9 +295,14 @@ export default function MaintenanceChecklist() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className={`font-semibold mb-1 ${task.completed ? 'line-through text-slate-500' : 'text-white'}`}>
-                        {task.title}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className={`font-semibold ${task.completed ? 'line-through text-slate-500' : 'text-white'}`}>
+                          {task.title}
+                        </h3>
+                        <span className={`text-lg ${getStatusColor(task.status)}`}>
+                          {getStatusIcon(task.status)}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-4 text-sm text-slate-400">
                         {editingTask === task.id ? (
                           <div className="flex items-center gap-2">
@@ -260,7 +321,7 @@ export default function MaintenanceChecklist() {
                           </div>
                         ) : (
                           <>
-                            <span 
+                            <span
                               className="flex items-center gap-1 cursor-pointer hover:text-orange-400"
                               onClick={() => {
                                 setEditingTask(task.id);
@@ -270,15 +331,32 @@ export default function MaintenanceChecklist() {
                               <Clock size={14} />
                               {task.frequency}
                             </span>
+                            {task.nextDue && (
+                              <span className={`flex items-center gap-1 font-medium ${getStatusColor(task.status)}`}>
+                                <Calendar size={14} />
+                                {formatDueDate(task.nextDue)}
+                              </span>
+                            )}
                             {task.lastCompleted && (
-                              <span className="flex items-center gap-1">
+                              <span className="flex items-center gap-1 text-slate-500">
                                 <span>Last done: {formatRelativeTime(task.lastCompleted)}</span>
-                                <span className="text-slate-600">({formatDate(task.lastCompleted)})</span>
                               </span>
                             )}
                           </>
                         )}
                       </div>
+
+                      {/* Recommended Parts & Tools */}
+                      {((task.recommendedParts && task.recommendedParts.length > 0) || (task.recommendedTools && task.recommendedTools.length > 0)) && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {task.recommendedParts && task.recommendedParts.map((part, idx) => (
+                            <PartBadge key={part.id || idx} part={part} />
+                          ))}
+                          {task.recommendedTools && task.recommendedTools.map((tool, idx) => (
+                            <PartBadge key={tool.id || idx} part={tool} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {task.history.length > 0 && (
@@ -313,16 +391,28 @@ export default function MaintenanceChecklist() {
                               <span>{entry.notes}</span>
                             </div>
                           )}
-                          {entry.partsUsed.length > 0 && (
-                            <div className="flex items-start gap-2 text-sm text-slate-300">
-                              <Wrench size={16} className="mt-0.5 flex-shrink-0" />
-                              <div className="flex flex-wrap gap-2">
-                                {entry.partsUsed.map((part, partIdx) => (
-                                  <span key={partIdx} className="px-2 py-1 bg-slate-800 rounded text-orange-400">
-                                    {part}
-                                  </span>
-                                ))}
-                              </div>
+                          {(entry.partsUsed.length > 0 || entry.toolsUsed.length > 0) && (
+                            <div className="space-y-2">
+                              {entry.partsUsed.length > 0 && (
+                                <div className="flex items-start gap-2 text-sm text-slate-300">
+                                  <span className="text-slate-500">Parts:</span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {entry.partsUsed.map((part, partIdx) => (
+                                      <PartBadge key={partIdx} part={part} />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {entry.toolsUsed.length > 0 && (
+                                <div className="flex items-start gap-2 text-sm text-slate-300">
+                                  <span className="text-slate-500">Tools:</span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {entry.toolsUsed.map((tool, toolIdx) => (
+                                      <PartBadge key={toolIdx} part={tool} />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -348,12 +438,73 @@ export default function MaintenanceChecklist() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Parts Used (comma-separated, optional)</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-2">Parts & Tools Used</label>
+
+                    {/* Recommended Parts */}
+                    {(() => {
+                      const task = tasks.find(t => t.id === completingTask);
+                      return task?.recommendedParts && task.recommendedParts.length > 0 && (
+                        <div className="mb-3">
+                          <span className="text-xs text-slate-500 block mb-1">Recommended Parts:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {task.recommendedParts.map((part, idx) => (
+                              <button
+                                key={part.id || idx}
+                                onClick={() => {
+                                  const currentParts = completionParts.split(',').map(p => p.trim()).filter(p => p);
+                                  if (!currentParts.includes(part.name)) {
+                                    setCompletionParts([...currentParts, part.name].join(', '));
+                                  }
+                                }}
+                                className="flex items-center gap-1 px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition-colors"
+                              >
+                                <Wrench size={10} />
+                                {part.name}
+                                {part.estimatedCost && (
+                                  <span className="text-green-400">${part.estimatedCost}</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Recommended Tools */}
+                    {(() => {
+                      const task = tasks.find(t => t.id === completingTask);
+                      return task?.recommendedTools && task.recommendedTools.length > 0 && (
+                        <div className="mb-3">
+                          <span className="text-xs text-slate-500 block mb-1">Recommended Tools:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {task.recommendedTools.map((tool, idx) => (
+                              <button
+                                key={tool.id || idx}
+                                onClick={() => {
+                                  const currentParts = completionParts.split(',').map(p => p.trim()).filter(p => p);
+                                  if (!currentParts.includes(tool.name)) {
+                                    setCompletionParts([...currentParts, tool.name].join(', '));
+                                  }
+                                }}
+                                className="flex items-center gap-1 px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition-colors"
+                              >
+                                <Wrench size={10} />
+                                {tool.name}
+                                {tool.estimatedCost && (
+                                  <span className="text-green-400">${tool.estimatedCost}</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <input
                       type="text"
                       value={completionParts}
                       onChange={(e) => setCompletionParts(e.target.value)}
-                      placeholder="e.g., Air filter, Screwdriver, Wrench"
+                      placeholder="e.g., Air filter, Screwdriver, Wrench (or click recommended items above)"
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500"
                     />
                   </div>

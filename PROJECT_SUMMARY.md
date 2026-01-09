@@ -1,94 +1,136 @@
-# Project Summary (Context Save File)
+# Fixit Hero - AI-Powered Home Repair Assistant
 
-## 🎯 Current Goal
-Core PWA features are complete. Now implementing conversational AI to enable iterative repair diagnosis - users can refine AI analysis through follow-up questions, retake photos, and narrow down repair suggestions for more accurate guidance.
+## 📋 Application Purpose
+Fixit Hero is an AI-powered Progressive Web App (PWA) designed to help homeowners identify, diagnose, and repair home maintenance issues. Users can take photos or describe problems, receive AI-powered diagnoses, get step-by-step repair instructions, and manage parts/tools shopping lists. The app combines conversational AI with practical home repair guidance, making professional-level repair assistance accessible to DIY homeowners.
 
 ## 🛠 Tech Stack
-- React 18.3.1 / Vite 5.4.2
-- TypeScript 5.5.3
-- Tailwind CSS 3.4.1
-- Lucide React 0.344.0
-- Sonner 2.0.7
-- Vite Plugin React
-- ESLint 9.9.1
-- TypeScript ESLint
-- Autoprefixer
-- PostCSS
+- **Frontend Framework**: React 18.3.1 with TypeScript 5.5.3
+- **Build Tool**: Vite 5.4.2 (ESM-first, lightning-fast HMR)
+- **Styling**: Tailwind CSS 3.4.1 (utility-first CSS framework)
+- **Icons**: Lucide React 0.344.0 (consistent iconography)
+- **Notifications**: Sonner 2.0.7 (toast notifications)
+- **Development Tools**:
+  - ESLint 9.9.1 with TypeScript ESLint
+  - Autoprefixer & PostCSS for CSS processing
+  - Vite Plugin React for optimized React builds
 
-##  PWA Features
-- Vite Plugin PWA 1.2.0 - Progressive Web App functionality
-- Service Worker - Offline caching and background sync
-- Web App Manifest - Installable app configuration
+## 📱 PWA Features
+- **Vite Plugin PWA 1.2.0**: Complete PWA functionality with auto-updates
+- **Service Worker**: Background caching and offline capability
+- **Web App Manifest**: Installable app with custom icons (192x192, 512x512 SVG)
+- **Offline Support**: Core functionality works without internet connection
+- **Mobile-First**: Responsive design optimized for mobile devices
+- **App-Like Experience**: Standalone mode, portrait orientation, custom theme colors
 
-##  Backend & APIs
-- Supabase 2.57.4 - Backend-as-a-Service (auth, database, storage)
-- Google Generative AI 0.24.1 - AI/ML integration (Gemini)
-- React Webcam 7.2.0 - Camera functionality
+## 🔧 Backend & APIs
+- **Supabase 2.57.4**: Backend-as-a-Service providing:
+  - User authentication (Google OAuth integration)
+  - PostgreSQL database with Row Level Security (RLS)
+  - Real-time subscriptions and data synchronization
+  - Automatic profile creation on user signup
+- **Google Generative AI 0.24.1**: Gemini AI integration for:
+  - Conversational repair diagnosis
+  - Image analysis for visual problem identification
+  - Streaming responses with typing effects
+  - Multimodal input (text + images)
+- **React Webcam 7.2.0**: Camera integration for photo capture during repairs
+- **Affiliate Program Integration**: Links to Amazon, Home Depot, Lowe's, and Walmart with configurable affiliate tags
 
-##  Project Structure
-- ES Modules - Modern JavaScript modules
-- Component-based architecture - React components in /src/components
-- Context API - State management with AuthContext
-- Service layer - API calls in /src/services
-- Environment variables - Configuration management
+## 🗄️ Database Structure
+**Supabase PostgreSQL Schema with RLS:**
+- **`profiles`**: User profiles (email, name, location data, home details)
+- **`repairs`**: Saved repair diagnoses (title, summary, parts, tools, steps)
+- **`maintenance_tasks`**: User-defined maintenance schedules with smart scheduling
+- **`maintenance_history`**: Completed maintenance task records with parts/tools used
+- **`maintenance_parts`**: User parts and tools inventory with affiliate links
+- **`shopping_list_items`**: Parts/tools shopping lists linked to repairs via `issue_id`
 
-##  Deployment
-- Vercel - Hosting and deployment platform
-- GitHub - Version control and CI/CD integration
+**Key Relationships:**
+- `repairs.id` → `shopping_list_items.issue_id` (foreign key)
+- All tables use `user_id` for user isolation via RLS
+- Unique constraints prevent duplicate shopping list items per user/issue
+- Maintenance tasks calculate next due dates based on completion history
+- Parts inventory tracks purchase history and affiliate shopping links
 
-##  Key Features
-- Authentication - Google OAuth via Supabase
-- AI-Powered Analysis - Image/text repair assistance
-- Progressive Web App - Installable on mobile devices
-- Responsive Design - Mobile-first with Tailwind
-- Offline Capability - Service worker caching
-- Real-time Sync - Supabase real-time features
+## 🏗️ Project Structure
+- **ES Modules**: Modern JavaScript module system
+- **Component Architecture**: `/src/components` with focused, reusable React components
+- **State Management**: React Context API (`AuthContext` for authentication)
+- **Service Layer**: `/src/services` for external API integrations:
+  - `supabaseClient.ts`: Supabase configuration and client
+  - `geminiService.ts`: AI conversation and diagnosis logic
+  - `repairService.ts`: Repair data management
+  - `shoppingListService.ts`: Shopping list operations
+  - `authService.ts`: Authentication utilities
+  - `affiliateService.ts`: E-commerce affiliate link generation
+- **Environment Configuration**: `import.meta.env` for secure API key management
 
-## ✅ Completed Tasks
-- Project initialization with Vite
-- .cursor/rules setup (000, 100, 999)
-- .cursorignore configured and updated to allow access to .cursor/rules/ files
-- Implemented quantity counters for "Tools" in AI Hero Report (Scanner.tsx).
-- Fixed Supabase shopping list unique constraint in `shopping_list_items` table to `UNIQUE(user_id, issue_id, name)`.
-- Resolved Google OAuth redirect issues for both local development and custom production domain (`fixit-hero.com`).
-- Enhanced Snap Issue button camera icon prominence for better user recognition
-- Fixed Cursor rules visibility issue by updating .cursorignore configuration
-- ✅ Conversational AI implementation with real-time streaming responses
-- ✅ Chat interface with message bubbles, avatars, and typing effects
-- ✅ Camera integration for taking photos during conversations
-- ✅ JSON diagnosis extraction and structured data parsing
-- ✅ Parts and tools extraction from AI responses using REQUIRED PARTS/TOOLS headers
-- ✅ Diagnosis saving to repairs table with proper foreign key relationships
-- ✅ Hero Reports page for viewing saved diagnoses with parts/tools/steps
-- ✅ Shopping list integration with repair foreign keys
-- ✅ Proper database schema with repairs.id → shopping_list_items.issue_id relationship
+## 🚀 Deployment & Version Control
+- **Hosting**: Vercel for global CDN, automatic deployments, and preview environments
+- **Version Control**: GitHub for source code management and CI/CD integration
+- **Domain**: Custom domain (`fixit-hero.com`) with OAuth redirect configuration
 
-## ✅ Completed Features
-- Conversational AI with Gemini streaming for iterative repair diagnosis
-- Real-time chat interface with message history and typing effects
-- Camera integration for taking photos during conversations
-- AI-powered diagnosis with structured JSON output
-- Parts and tools extraction from AI responses
-- Diagnosis saving and Hero Reports management
-- Shopping list integration with proper database relationships
-- Progressive repair guidance flow
+## ✨ Key Features
+- **AI-Powered Diagnosis**: Conversational Gemini AI for iterative repair guidance
+- **Multimodal Input**: Text descriptions + photo analysis for comprehensive diagnosis
+- **Camera Integration**: Built-in photo capture for on-site problem documentation
+- **Structured Repair Data**: AI extracts parts, tools, and step-by-step instructions
+- **Hero Reports**: Saved repair histories with complete diagnosis details
+- **Smart Shopping Lists**: Automatic parts/tools lists linked to specific repairs
+- **Advanced Maintenance System**:
+  - Intelligent scheduling with next due date calculations
+  - Visual status indicators (⚠️ overdue, 🔔 due soon, 📅 upcoming)
+  - Comprehensive parts and tools inventory management
+  - Affiliate shopping links for re-purchase (Amazon, Home Depot, Lowe's, Walmart)
+  - Detailed maintenance history with cost tracking
+- **Affiliate Shopping**: Direct links to purchase parts from major retailers
+- **Real-Time Sync**: Cross-device data synchronization via Supabase
+- **Offline Capability**: Core functionality works without internet connection
 
-## ⏳ Active Work / Next Steps
-- Monitor production deployment and user feedback
-- Test and refine AI conversation flow and diagnosis accuracy
-- Consider future enhancements (additional AI features, improved UI/UX, performance optimizations)
-- Maintain PWA compatibility and offline functionality
-- Regular dependency updates and security patches
+## 📝 Development Rules & Guidelines
+**Modular Cursor Rules System (.cursor/rules/):**
+- **`000-reasoning.mdc`**: Mandatory reasoning protocol requiring `<thinking>` blocks before code changes
+- **`100-react-vite.mdc`**: React/Vite best practices for modern development patterns
+- **`999-project-summary.mdc`**: Project handover protocol for AI model continuity
+- **`style-guide.mdc`**: Code style preferences (camelCase variable naming)
 
-## 🧠 Architectural Decisions
-- Using Modular .mdc rules for token efficiency and consistent AI behavior.
-- Forcing <thinking> blocks for deep reasoning and architectural planning.
-- Cursor rules system (.cursor/rules/) for maintaining project context and protocols.
-- Strategic .cursorignore configuration to balance AI access with performance.
-- Conversational AI using Gemini chat sessions with streaming responses for real-time user experience.
-- Progressive repair diagnosis flow: Photo/Text → Initial Analysis → User Questions → AI Diagnosis → Structured Text Parsing → Save to Database.
-- Parts/tools categorization based on AI headers (REQUIRED PARTS/TOOLS) rather than predefined lists.
-- Diagnosis extraction from AI's structured text format (IDENTIFIED ISSUE, REQUIRED PARTS, etc.) instead of JSON.
-- Database normalization with repairs.id as foreign key in shopping_list_items table.
-- Real-time streaming responses with typing effects for enhanced user experience.
-- Advanced rate limiting with exponential backoff (3s base, 5 retries), model fallback, and user-friendly error messages. Image compression (1024px max width, 70% JPEG quality) to reduce token usage. Robust UI debouncing with isThinking state to prevent duplicate API calls. Multimodal history management with text-only history (last 4 messages) and 3-second minimum delays between requests to prevent token limit violations. Comprehensive rate limit error detection and automatic retry with smart spacing.
+**Development Protocol:**
+1. **Context Analysis**: Use `@Codebase` queries to understand existing architecture
+2. **Thinking Phase**: Required `<thinking>` blocks for architectural decisions
+3. **Impact Assessment**: Analyze side effects (React re-renders, Vite HMR issues)
+4. **Execution**: Provide code changes with clear step-by-step planning
+5. **Verification**: Test changes and verify integration points
+
+## ✅ Completed Tasks & Features
+- **Core Infrastructure**: Vite project setup with TypeScript and Tailwind
+- **Authentication System**: Google OAuth integration with Supabase
+- **AI Integration**: Streaming Gemini conversations with image analysis
+- **Database Architecture**: Complete schema with RLS policies and relationships
+- **PWA Implementation**: Installable app with offline capabilities
+- **Component Development**:
+  - Conversational chat interface with typing effects
+  - Camera integration for photo capture
+  - Diagnosis parsing and structured data extraction
+  - Shopping list management with quantity tracking
+  - **Enhanced Maintenance System**:
+    - Smart scheduling with next due date calculations
+    - Visual status indicators (upcoming, due, overdue)
+    - Parts and tools tracking with affiliate links
+    - Maintenance history with detailed completion records
+    - Parts Manager for inventory tracking and re-purchase
+  - Hero Reports for saved diagnoses
+- **User Experience**: Mobile-first responsive design, toast notifications, loading states
+- **Performance Optimizations**: Image compression, rate limiting, debouncing
+- **Affiliate Integration**: Multi-retailer shopping links with configurable tags
+
+## 🔮 Potential Improvements & Missing Features
+- **Token Management**: Lite version with usage limits to prevent Gemini API costs
+- **Advanced AI Features**: Voice input, video analysis, repair cost estimation
+- **Social Features**: Community repair tips, expert verification system
+- **IoT Integration**: Smart home device diagnostics and automation
+- **Offline Enhancement**: Advanced caching strategies for complete offline functionality
+- **Analytics**: User behavior tracking for feature improvement
+- **Monetization**: Premium features, affiliate revenue optimization
+- **Localization**: Multi-language support for global user base
+- **Performance**: Code splitting, lazy loading, bundle size optimization
+- **Security**: Enhanced authentication, data encryption, privacy controls

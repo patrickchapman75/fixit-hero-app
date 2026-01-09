@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Camera, CheckSquare, ShoppingCart, LogOut, User, Settings, Menu, X, History } from 'lucide-react';
+import { Home, Camera, CheckSquare, ShoppingCart, LogOut, User, Settings, Menu, X, History, Package } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut } from '../services/authService';
 
@@ -17,6 +17,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
     { id: 'scanner', label: 'Issue Help', icon: Camera },
     { id: 'repairs', label: 'Hero Reports', icon: History },
     { id: 'checklist', label: 'Maintenance', icon: CheckSquare },
+    { id: 'parts', label: 'Parts & Tools', icon: Package },
     { id: 'shopping', label: 'Shopping List', icon: ShoppingCart },
     { id: 'profile', label: 'Profile', icon: Settings },
   ];
